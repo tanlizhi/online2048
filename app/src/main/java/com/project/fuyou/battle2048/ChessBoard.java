@@ -3,6 +3,7 @@ package com.project.fuyou.battle2048;
 import android.app.ProgressDialog;
 import android.content.DialogInterface;
 import android.content.Intent;
+import android.os.CountDownTimer;
 import android.os.Handler;
 import android.os.Message;
 import android.support.v7.app.AlertDialog;
@@ -26,6 +27,7 @@ public class ChessBoard extends AppCompatActivity {
     private ClientPrograme clientPrograme;
     private TextView tv2;
     private ProgressDialog pb;
+    public CountDownTimer timer;
 
     @Override
     protected void onCreate(Bundle savedInstanceState) {
@@ -34,6 +36,24 @@ public class ChessBoard extends AppCompatActivity {
         clientPrograme=new ClientPrograme();
         bl=(Battle2048Layout) findViewById(R.id.gameboard);
         tv2=(TextView) findViewById(R.id.textView2);
+        timer=new CountDownTimer(10000,1000) {
+            @Override
+            public void onTick(long millisUntilFinished) {
+                tv2.setText((millisUntilFinished / 1000)+"");
+            }
+            @Override
+            public void onFinish() {
+                timer.cancel();
+                bl.isYourTurn=false;
+                Toast.makeText(ChessBoard.this,"本次您未做出移动，若连续三次不移动则自动判断为输",Toast.LENGTH_SHORT).show();
+                try {
+                    clientPrograme.sendHandle("game:blank");//发送信息
+                    tv2.setText("正在等待对手操作...");
+                } catch (IOException e) {
+                    e.printStackTrace();
+                }
+            }
+        };
         pb=new ProgressDialog(ChessBoard.this);
 //        pb.setMessage("正在匹配旗鼓相当的对手...");
 //        pb.setCancelable(true);
@@ -59,6 +79,8 @@ public class ChessBoard extends AppCompatActivity {
                         winOrFal(false);//如果自己先发送exit信息，则自己输
                     }
                     clientPrograme.sendHandle(s);//发送信息
+                    timer.cancel();
+                    tv2.setText("正在等待对手操作...");
                 }catch (IOException e){}
             }
         });
@@ -72,6 +94,7 @@ public class ChessBoard extends AppCompatActivity {
                 handler.sendMessage(message);
             }
         });
+
 
     }
 
@@ -132,25 +155,33 @@ public class ChessBoard extends AppCompatActivity {
                         break;
                     case "game"://设置游戏信息
                         switch (strs[1]){
+                            case "blank":
+                                timer.start();
+                                break;
                             case "LEFT":
                                 bl.action(Battle2048Layout.ACTION.LEFT);
+                                timer.start();
                                 break;
                             case "RIGHT":
                                 bl.action(Battle2048Layout.ACTION.RIGHT);
+                                timer.start();
                                 break;
                             case "DOWN":
                                 bl.action(Battle2048Layout.ACTION.DOWM);
+                                timer.start();
                                 break;
                             case "UP":
                                 bl.action(Battle2048Layout.ACTION.UP);
+                                timer.start();
                                 break;
                             default:
                                 Toast.makeText(ChessBoard.this,"Game Start!",Toast.LENGTH_SHORT).show();
+                                timer.start();
                                 break;
                         }
                         Battle2048Layout.isYourTurn=true;
 //                    tv.setText("轮到你的回合，请操作！");
-                        if (strs.length>2)
+                        if (strs.length>4)
                             bl.mGame2048Items[Integer.valueOf(strs[3])][Integer.valueOf(strs[4])].setNumber(Integer.valueOf(strs[2]));
                         break;
                     case "message"://用户聊天信息
@@ -172,6 +203,8 @@ public class ChessBoard extends AppCompatActivity {
 
         }
     };
+
+
 
 
 }

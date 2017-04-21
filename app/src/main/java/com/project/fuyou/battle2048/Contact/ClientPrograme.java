@@ -16,8 +16,8 @@ import java.io.OutputStream;
 import java.net.Socket;
 
 public class ClientPrograme {
-//    public static final String ip = "123.207.140.106";
-    public static final String ip = "101.28.124.20";
+    public static final String ip = "123.207.140.106";
+//    public static final String ip = "101.28.124.20";
     public static final int port = 10086;
     private Socket socket=null;
     private OutputStream out=null;
